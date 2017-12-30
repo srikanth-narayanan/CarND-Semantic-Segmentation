@@ -1,0 +1,24 @@
+Input Size:                 224 x 224 x 3
+Layer 1: Conv2D             64 x 64 x 3
+Layer 2: Conv2D             64 x 64 x 3
+Layer 3: MaxPool            2 x 2
+Layer 4: Conv2D             128 x 128 x 3
+Layer 5: Conv2D             128 x 128 x 3
+Layer 6: MaxPool            2 x 2
+Layer 7: Conv2D             256 x 256 x 3
+Layer 8: Conv2D             256 x 256 x 3
+Layer 9: MaxPool            2 x 2
+Layer 10: Conv2D            512 x 512 x 3
+Layer 11: Conv2D            512 x 512 x 3
+Layer 11: Conv2D            512 x 512 x 3
+Layer 12: MaxPool           2 x 2
+Layer 13: Conv2D            512 x 512 x 3
+Layer 14: Conv2D            512 x 512 x 3
+Layer 15: Conv2D            512 x 512 x 3
+Layer 16: MaxPool           2 x 2
+Layer 17: Flatten
+Layer 18: FC                4096
+Layer 19: Dropout           0.5
+Layer 20: FC                4096
+Layer 21: Dropout           0.5
+Layer 22: Softmax           1000
