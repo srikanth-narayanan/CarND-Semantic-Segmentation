@@ -32,10 +32,10 @@ def load_vgg(sess, vgg_path):
     vgg_layer3_out_tensor_name = 'layer3_out:0'
     vgg_layer4_out_tensor_name = 'layer4_out:0'
     vgg_layer7_out_tensor_name = 'layer7_out:0'
-    
+
     # Load the model
     tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
-    
+
     # Load the Graph
     graph = tf.get_default_graph()
     img_input = graph.get_tensor_by_name(vgg_input_tensor_name)
@@ -43,7 +43,7 @@ def load_vgg(sess, vgg_path):
     layer3_out = graph.get_tensor_by_name(vgg_layer3_out_tensor_name)
     layer4_out = graph.get_tensor_by_name(vgg_layer4_out_tensor_name)
     layer7_out = graph.get_tensor_by_name(vgg_layer7_out_tensor_name)
-    
+
     return img_input, keep_prob, layer3_out, layer4_out, layer7_out
 tests.test_load_vgg(load_vgg, tf)
 
@@ -60,17 +60,17 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     # TODO: Implement function
     # We need to implement encoder for the FCN-8 Architecture.
     # Since we will use this for identifying road pixels its 2 classes
-    
+
     kernel_Init = tf.random_normal_initializer(stddev=0.01)
     kernel_Regu = tf.contrib.layers.l2_regularizer(1e-3)
-    
+
     # 1 x 1 convolution of the last VGG Layer (7)
     # argument 1 represents the kernel size 1 and hence 1 x 1 convolution
     layer7_enc_out = tf.layers.conv2d(vgg_layer7_out, num_classes, 1,
                                       padding='same',
                                       kernel_initializer=kernel_Init,
                                       kernel_regularizer=kernel_Regu)
-    
+
     # Upsample the 1x1 encoded layer to original image size
     # transpose layer will be 4-dimensional: (batch_size, original_height, original_width, num_classes).
     layer7_upsampled = tf.layers.conv2d_transpose(layer7_enc_out, num_classes, 4,
@@ -78,39 +78,39 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                                   padding='same',
                                                   kernel_initializer=kernel_Init,
                                                   kernel_regularizer=kernel_Regu)
-    
+
     # 1 x 1 convolution of the VGG layer 4
     layer4_enc_out = tf.layers.conv2d(vgg_layer4_out, num_classes, 1,
                                       padding='same',
                                       kernel_initializer=kernel_Init,
                                       kernel_regularizer=kernel_Regu)
-    
+
     # Peform Skip connections, element wise addition
     layer_skip_1 = tf.add(layer7_upsampled, layer4_enc_out)
-    
+
     # Upsamping of skip connection layer output
     layer_skip_1_upsampled = tf.layers.conv2d_transpose(layer_skip_1, num_classes, 4,
                                                         strides=(2,2),
                                                         padding='same',
                                                         kernel_initializer=kernel_Init,
                                                         kernel_regularizer=kernel_Regu)
-    
+
     # 1 x 1 convolution of VGG layer 3
     layer3_enc_out = tf.layers.conv2d(vgg_layer3_out, num_classes, 1,
                                       padding='same',
                                       kernel_initializer=kernel_Init,
                                       kernel_regularizer=kernel_Regu)
-    
+
     # Peform Skip connections, element wise addition
     layer_skip_2 = tf.add(layer_skip_1_upsampled, layer3_enc_out)
-    
+
     # Upsample again to get the last layer
     dnn_last_layer = tf.layers.conv2d_transpose(layer_skip_2, num_classes, 16,
                                                 strides=(8,8),
                                                 padding='same',
                                                 kernel_initializer=kernel_Init,
                                                 kernel_regularizer=kernel_Regu)
-    
+
     return dnn_last_layer
 tests.test_layers(layers)
 
@@ -129,9 +129,9 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     correct_label = tf.reshape(correct_label, (-1, num_classes))
     cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label))
     optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    train_operation = optimiser.minimize(cross_entropy_loss) 
-    
-    return logits, cross_entropy_loss, train_operation
+    train_operation = optimiser.minimize(cross_entropy_loss)
+
+    return logits, train_operation, cross_entropy_loss
 tests.test_optimize(optimize)
 
 
@@ -155,7 +155,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     print("Training ... ")
     print("=============")
     print()
-    
+
     for i in range(epochs):
         print("EPOCH {} ...".format(i+1))
         print()
@@ -194,19 +194,19 @@ def run():
         # TODO: Build NN using load_vgg, layers, and optimize function
         EPOCHS = 50
         BATCH_SIZE = 5
-        
+
         # Create Placeholder Variables
-        correct_label = tf.placeholder(tf.int32, 
-                                       [None, image_shape[0], image_shape[1], num_classes],
+        correct_label = tf.placeholder(tf.int32,
+                                       [None, None, None, num_classes],
                                        name='correct_label')
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
-        
+
         # Get VGG layers with its weights out
         input_image, keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
         # Create the new connections using FCN
         nn_last_layer = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
         #Get logits, cross entroy and train operation
-        logits, cross_entropy_loss, train_operation = optimize(nn_last_layer, correct_label, learning_rate, num_classes)
+        logits, train_operation, cross_entropy_loss = optimize(nn_last_layer, correct_label, learning_rate, num_classes)
         # TODO: Train NN using the train_nn function
         train_nn(sess, EPOCHS, BATCH_SIZE, get_batches_fn, train_operation,
                  cross_entropy_loss, input_image, correct_label, keep_prob,

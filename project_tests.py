@@ -96,7 +96,7 @@ def test_optimize(optimize):
     num_classes = 2
     shape = [2, 3, 4, num_classes]
     layers_output = tf.Variable(tf.zeros(shape))
-    correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes])
+    correct_label = tf.placeholder(tf.float32, [None, None, None, num_classes])
     learning_rate = tf.placeholder(tf.float32)
     logits, train_op, cross_entropy_loss = optimize(layers_output, correct_label, learning_rate, num_classes)
 
