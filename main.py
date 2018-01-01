@@ -105,8 +105,8 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     layer_skip_2 = tf.add(layer_skip_1_upsampled, layer3_enc_out)
     
     # Upsample again to get the last layer
-    dnn_last_layer = tf.layers.conv2d_transpose(layer_skip_2, num_classes, 4,
-                                                strides=(2,2),
+    dnn_last_layer = tf.layers.conv2d_transpose(layer_skip_2, num_classes, 16,
+                                                strides=(8,8),
                                                 padding='same',
                                                 kernel_initializer=kernel_Init,
                                                 kernel_regularizer=kernel_Regu)
@@ -126,9 +126,8 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     """
     # TODO: Implement function
     logits = tf.reshape(nn_last_layer, (-1, num_classes))
-    labels = tf.reshape(correct_label, (-1, num_classes))
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, labels)
-    cross_entropy_loss = tf.reduce_mean(cross_entropy)
+    correct_label = tf.reshape(correct_label, (-1, num_classes))
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label))
     optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate)
     train_operation = optimiser.minimize(cross_entropy_loss) 
     
@@ -158,11 +157,12 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     print()
     
     for i in range(epochs):
-        print("EPOCH {} ...")
+        print("EPOCH {} ...".format(i+1))
         print()
         for image, label in get_batches_fn(batch_size):
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={
-                    input_image: image, correct_label: label, keep_prob: 0.5})
+                    input_image: image, correct_label: label, keep_prob: 0.5,
+                    learning_rate: 0.0001})
             print("Loss :   {:.3f}".format(loss))
             print()
 tests.test_train_nn(train_nn)
@@ -196,9 +196,10 @@ def run():
         BATCH_SIZE = 5
         
         # Create Placeholder Variables
-        correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes],
+        correct_label = tf.placeholder(tf.int32, 
+                                       [None, image_shape[0], image_shape[1], num_classes],
                                        name='correct_label')
-        learning_rate = tf.constant(0.0001)
+        learning_rate = tf.placeholder(tf.float32, name='learning_rate')
         
         # Get VGG layers with its weights out
         input_image, keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
