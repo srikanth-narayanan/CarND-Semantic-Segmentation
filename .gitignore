@@ -4,3 +4,11 @@
 *.ini
 
 mytest.py
+
+runs/checkpoint
+
+runs/FCN8_weight.ckpt.data-00000-of-00001
+
+runs/FCN8_weight.ckpt.index
+
+runs/FCN8_weight.ckpt.meta
