@@ -216,6 +216,12 @@ def run():
 
         # OPTIONAL: Apply the trained model to a video
 
+        # Save trained model
+        model_saver = tf.train.Saver()
+        model_save_path = os.path.join(runs_dir, 'FCN8_weight.ckpt')
+        model_saver.save(sess, model_save_path)
+        print('Model Saved to: {}'.format(model_save_path))
+
 
 if __name__ == '__main__':
     run()
