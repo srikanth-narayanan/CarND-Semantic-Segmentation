@@ -1,6 +1,45 @@
 # Semantic Segmentation
 ### Introduction
-In this project, you'll label the pixels of a road in images using a Fully Convolutional Network (FCN).
+In this project a Fully Convolution Network is built based on the VGG 16 architecture used for image classification and it is trained on [Kitti Road dataset](http://www.cvlibs.net/download.php?file=data_road.zip). This is used to perform sematic segmentation to identify road surface from the test set.
+
+### Architecture
+The [VGG 16](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/Graph_VGG_16.png) architecture is originally used for image classification. This architecure consists of 5 convolution layer and 2 fully connected layer.
+- The final fully connected layer is converted to 1x1 convolution by setting the depth equal to number of classes, which is road or not a road in this use case. This layer is upsampled to represent the original image size.
+- In order to maintain the feature information skip connections. The skip connection 1 carries information from the 4th convolution layer of the VGG 16 architecture. This is converted to a 1x1 convolution layer and element wise addtion is performed to the skip connection.
+- The resultant is upsampled and skip connection is repeated with 3rd convolution layer to preserve more feature information.
+- The result is upsampled to generate the final layer.
+- All convolution, upsampling process used a l2-regularisation and kernel initialiser.
+
+### Optimiser
+
+The loss function is calculated using cross-entropy and Adam Optimiser is used to reduce the cost.
+
+### Training and Hyperparameters
+
+The following hyperparameters are used for training.
+
+- EPOCH - 60
+- BATCH SIZE - 5
+- Learning Rate - 0.0009
+- keep probability - 0.5
+
+### Results
+
+The network performed overall well in training and test. The average loss per batch for 50 epoch was reduced up to 0.03.
+
+The following are some of the samples of the result, but there are scenrios where the results could be improved.
+
+![Sample 1](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/runs/Sample_Outputs/um_000013.png)
+
+![Sample 2](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/runs/Sample_Outputs/um_000014.png)
+
+![Sample 3](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/runs/Sample_Outputs/um_000027.png)
+
+![Sample 4](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/runs/Sample_Outputs/um_000066.png)
+
+![Sample 5](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/runs/Sample_Outputs/um_000077.png)
+
+![Sample 6](https://github.com/srikanth-narayanan/CarND-Semantic-Segmentation/blob/master/runs/Sample_Outputs/uu_000021.png)
 
 ### Setup
 ##### Frameworks and Packages
