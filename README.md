@@ -25,7 +25,7 @@ The following hyperparameters are used for training.
 
 ### Results
 
-The network performed overall well in training and test. The average loss per batch for 50 epoch was reduced up to 0.03.
+The network performed overall well in training and test. The average loss per batch for 50 epoch was reduced up to 0.02.
 
 The following are some of the samples of the result, but there are scenrios where the results could be improved.
 
